@@ -1,0 +1,127 @@
+<?php
+  header('Content-Type: text/html; charset=utf-8');
+  include('conn.php');  
+  
+  $kickboard_name=$_POST['kickboard_name'];
+  if(empty($kickboard_name)){
+    if(empty($kickboard_name)) $kickboard_name = '1';
+  }
+   
+  if (mysqli_connect_errno()) {
+    echo "Failed to connect to MySQL: " . mysqli_connect_error();
+  } else {
+    echo "CONNECTION SUCCESS\n";
+    echo " 김민준 므싰다 ";
+    $sql = "SELECT * FROM mark2 WHERE kickboard = '$kickboard_name'";
+    $result =  mysqli_query($conn, $sql);
+  }
+?>
+
+<!DOCTYPE html>
+
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta http-equiv="refresh" content="10"> -->
+    <title>Gyro RECORD</title>
+    <link rel="stylesheet" href="css/button.css">
+  </head>
+
+  <body>
+    <header>
+        <?php include('gyro_button.html'); ?>
+    </header>
+
+    <div style="text-align:center">
+        <br>
+        <form method='post'>
+        <input type='text' name='kickboard_name' value='1' style="color:grey">
+        <input type='submit' value='SEARCH'>
+        </form>
+        <p><?php
+        echo 'Searched Kickboard : ',$kickboard_name;
+        ?></p>
+
+        <table align="center" border="1" bordercolor="white" bgcolor="black" width="90%">
+            <tr>
+                <th width="160px" height="40px" bgcolor="white" rowspan="2" align="center">
+                    <font size="3">Record</font>
+                    <font size="5">No.</font>
+                </th>
+                <th width="360px" height="40px" bgcolor="white" rowspan="2" align="center">
+                    <font size="6">DATE</font>
+                </th>
+                <th  height="20px" bgcolor="white" colspan="3" align="center">
+                    <font size="5">Loc</font>
+                </th>
+                <th height="20px" bgcolor="white" colspan="3" align="center">
+                    <font size="5">Acc</font>
+                </th>
+                <th height="20px" bgcolor="white" colspan="3" align="center">
+                    <font size="5">Ang Acc</font>
+                </th>
+                <th height="40px" bgcolor="white" colspan="2" align="center">
+                    <font size="6">Map</font>
+                </th>
+            </tr>
+            <tr>
+                <td width="60" height="20px" bgcolor="white" align="center">
+                    <font size="5">x</font>
+                </td>
+                <td width="60" height="20px" bgcolor="white" align="center">
+                    <font size="5">y</font>
+                </td>
+                <td width="60" height="20px" bgcolor="white" align="center">
+                    <font size="5">z</font>
+                </td>
+                <td width="60" height="20px" bgcolor="white" align="center">
+                    <font size="5">x</font>
+                </td>
+                <td width="60" height="20px" bgcolor="white" align="center">
+                    <font size="5">y</font>
+                </td>
+                <td width="60" height="20px" bgcolor="white" align="center">
+                    <font size="5">z</font>
+                </td>
+                <td width="60" height="20px" bgcolor="white" align="center">
+                    <font size="5">x</font>
+                </td>
+                <td width="60" height="20px" bgcolor="white" align="center">
+                    <font size="5">y</font>
+                </td>
+                <td width="60" height="20px" bgcolor="white" align="center">
+                    <font size="5">z</font>
+                </td>
+                <td width="60" height="20px" bgcolor="white" align="center">
+                    <font size="5">lat</font>
+                </td>
+                <td width="60" height="20px" bgcolor="white" align="center">
+                    <font size="5">long</font>
+                </td>
+            </tr>
+        
+        <p>
+            <?php
+                while($rows = mysqli_fetch_array($result) ){
+                    echo '<tr align="center" height="36px" bgcolor="white">';
+                    echo '<td>',$rows['no'],'</td>';    
+                    echo '<td>',$rows['record_date'],'</td>';    
+                    echo '<td>',$rows['loc_x'],'</td>';
+                    echo '<td>',$rows['loc_y'],'</td>';
+                    echo '<td>',$rows['loc_z'],'</td>';
+                    echo '<td>',$rows['acc_x'],'</td>';
+                    echo '<td>',$rows['acc_y'],'</td>';
+                    echo '<td>',$rows['acc_z'],'</td>';
+                    echo '<td>',$rows['ang_x'],'</td>';
+                    echo '<td>',$rows['ang_y'],'</td>';
+                    echo '<td>',$rows['ang_z'],'</td>';
+                    echo '<td>',$rows['latitude'],'</td>';
+                    echo '<td>',$rows['longitude'],'</td>';
+                    echo '</tr>';
+                }
+            ?>
+        </p>
+        </table>
+    </div>
+  </body>
+
+</html>

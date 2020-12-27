@@ -1,0 +1,90 @@
+<?php
+  header('Content-Type: text/html; charset=utf-8');
+  include('conn.php');
+  
+  $kickboard_name=$_POST['kickboard_name'];
+  if(empty($kickboard_name)){
+    $kickboard_name = 'HC-06';
+  }
+  
+  $start_date=$_POST['start_date'];
+  if(empty($start_date)) $start_date = date("Y-m-d");;
+  $start_time=$_POST['start_time'];
+  if(empty($start_time)) $start_time = '00:00:00';
+  $mysql_start_date = DateTime::createFromFormat('Y-m-dH:i:s', $start_date. $start_time)->format('Y-m-d H:i:s');
+  
+  $end_date=$_POST['end_date'];
+  if(empty($end_date)) $end_date = date("Y-m-d");
+  $end_time=$_POST['end_time'];
+  if(empty($end_time)) $end_time = '23:59:59';
+  $mysql_end_date = DateTime::createFromFormat("Y-m-dH:i:s", $end_date. $end_time)->format('Y-m-d H:i:s');
+
+  if (mysqli_connect_errno()) {
+    echo "Failed to connect to MySQL: " . mysqli_connect_error();
+  } else {
+    echo "CONNECTION SUCCESS\n";
+    echo " 김민준 므싰다 ";
+    $sql = "SELECT * FROM mark1 WHERE kickboard = '$kickboard_name' AND (shock_date BETWEEN '$mysql_start_date' AND '$mysql_end_date')";
+    $result =  mysqli_query($conn, $sql);
+  }
+?>
+
+<!DOCTYPE html>
+<html style="font-size: 16px;">
+
+  <head>
+    <meta charset="utf-8">
+    <title>SHOCK RECORD</title>
+  </head>
+
+  <body>
+    <header>
+      <link rel="stylesheet" href="css/button.css">
+      <?php include('shock_button.html'); ?>
+    </header>
+
+    <div style="text-align:center">
+      <br>
+      <form method='post'>
+        <input type='text' name='kickboard_name' placeholder='블루투스 이름(default HC-06)' value='' style="width:240px;color:grey">
+        <br>
+        <input type='text' name='start_date' placeholder='시작날짜(YYYY-mm-dd)' value='' style="color:grey">
+        <input type='text' name='start_time' placeholder='시간(HH-MM-SS) (default 00:00:00)' value='' style="width:240px;color:grey">
+        <br>
+        <input type='text' name='end_date'   placeholder='종료날짜(YYYY-mm-dd)' value='' style="color:grey">
+        <input type='text' name='end_time' placeholder='시간(HH-MM-SS) (default 23:59:59)' value='' style="width:240px;color:grey">
+        <br>
+        <input type='submit' value='SEARCH'>
+      </form>
+      <p><?php
+        echo "Searched : ".$kickboard_name.
+            " from ".date($mysql_start_date).
+            " to ".date($mysql_end_date);
+        ?>
+      </p>
+
+      <table align="center" border="1" bordercolor="white" bgcolor="black">
+        <th width="160px" height="40px" bgcolor="white">
+          <font size="5">Record No.</font>
+        </th>
+        <th width="360px" height="40px"  bgcolor="white">
+          <font size="5">DATE</font>
+        </th>
+        <th width="120px" height="40px" bgcolor="white">
+          <font size="5">shock</font>
+        </th>
+
+        <p><?php
+          while($rows = mysqli_fetch_array($result) ){
+            echo '<tr align="center" height="36px" bgcolor="white">';
+            echo '<td>',$rows['no'],'</td>';
+            echo '<td>',$rows['shock_date'],'</td>';
+            echo '<td>',$rows['shock'],'</td>';
+            echo '</tr>';
+          }
+        ?></p>
+      </table>
+    </div>
+  </body>
+
+</html>

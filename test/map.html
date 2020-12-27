@@ -1,0 +1,104 @@
+<?php
+  header('Content-Type: text/html; charset=utf-8');
+  include('../conn.php');  
+   
+  if (mysqli_connect_errno()) {
+    echo "Failed to connect to MySQL: " . mysqli_connect_error();
+  } else {
+    $sql = "SELECT * FROM mark1_test WHERE shock='1'";
+    $result = mysqli_query($conn, $sql);
+    $length = $result->num_rows;
+    $lat = [];
+    $long = [];
+    while( $rows = mysqli_fetch_array($result) ){
+      array_push($lat, $rows['latitude']);
+      array_push($long, $rows['longitude']);
+    }
+    $gps=[];
+    for ( $i = 0 ; $i < $length ; $i++ ){
+      array_push($gps, array('lat' => $lat[$i], 'long' => $long[$i]) );
+    }
+    $gps_json = json_encode($gps);
+  }
+?>
+
+<!DOCTYPE html>
+<html style="font-size: 16px;">
+
+  <head>
+	<meta charset="utf-8"/>
+    <title>SCOOKER</title>
+    <script>
+      var gps = <?php echo $gps_json; ?>;
+      var length = <?php echo $length; ?>;
+    </script>
+  </head>
+
+  <body>
+    <header>
+      <link rel="stylesheet" href="../css/main.css">
+      <link rel="stylesheet" href="../css/button.css">
+      <link rel="shortcut icon" href="..//images/scooker_small.ico" type="image/x-icon">
+      <link rel="shortcut icon" href="../images/scooker_small.ico">
+      <link rel="icon" href="../images/scooker_small.ico" type="image/x-icon">
+      <link rel="icon" href="../images/scooker_small.ico"> 
+      <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=943099a8532d50175446b338d9f13a37"></script>
+      <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=APIKEY&libraries=services,clusterer,drawing"></script>
+    </header>
+
+    <div align="center">
+      <img src="../images/scooker_v3.png" alt="No Image Found" width="30%" onclick="location.href='../index.html'"><br>
+      <h1>MAP TEST</h1>
+      <hr size="4px" color="darkcyan" width="90%">
+      <img src="../images/unlock.png" alt="No Image Found" width="30px" id="lock_image">
+      <input type="checkbox" onclick="lock()" class="switch" id="check">
+      <div id="map" style="width:800px; height:450px;"></div>
+      <script>
+        var container = document.getElementById('map');
+        var options = {
+          center: new kakao.maps.LatLng(36.012277245185594, 129.32373470210902),
+          level: 5
+        };
+
+        var map = new kakao.maps.Map(container, options);
+
+        var mapTypeControl = new kakao.maps.MapTypeControl();
+        map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
+        var zoomControl = new kakao.maps.ZoomControl();
+        map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+
+        function lock(){
+          var chk = document.getElementById('check').checked;
+          if(chk) document.getElementById('lock_image').src="../images/lock.png";
+          else document.getElementById('lock_image').src="../images/unlock.png";
+          map.setDraggable(!chk);
+          map.setZoomable(!chk);
+        }
+
+        var positions=[];
+        for (var i = 0; i < length ; i++) {
+          positions.push( new kakao.maps.LatLng(gps[i].lat, gps[i].long) );
+        }
+        var polyline = new kakao.maps.Polyline({
+          path: positions, // 선을 구성하는 좌표배열 입니다
+          strokeWeight: 3, // 선의 두께 입니다
+          strokeColor: '#1EE4A9', // 선의 색깔입니다
+          strokeOpacity: 0.8, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
+          strokeStyle: 'solid' // 선의 스타일입니다
+        });
+        polyline.setMap(map);  
+        
+        for (var i = 0; i < positions.length; i+=2) {
+          var marker = new kakao.maps.Marker({
+            map: map, // 마커를 표시할 지도
+            position: positions[i], // 마커를 표시할 위치
+            title : i // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
+          });
+        }
+        marker.setMap(map);
+
+      </script>
+    </div>
+  </body>
+
+</html>
