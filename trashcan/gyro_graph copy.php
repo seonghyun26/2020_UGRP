@@ -32,62 +32,24 @@
   $mysql_end_date = DateTime::createFromFormat("Y-m-d H:i:s", $date. $end_time)->format('Y-m-d H:i:s');
   setcookie("end_time", $end_time, time() + 86400);
   
-  $range = $_POST['range'];
-  if(empty($range)){
-    $range = $_COOKIE['range'];
-    if(empty($range)) $range = 24;
-  }
-  setcookie("range", $range, time() + 86400);
-
   if (mysqli_connect_errno()) {
     echo "Failed to connect to MySQL: " . mysqli_connect_error();
   } else {
+    echo "CONNECTION SUCCESS\n";
     $sql = "SELECT * FROM mark2 WHERE kickboard = '$kickboard' AND (record_date BETWEEN '$mysql_start_date' AND '$mysql_end_date')";
-    $result = mysqli_query($conn, $sql);
-    $num = mysqli_num_rows($result);
-    $result_date = array();
-    $deg_x = array();
-    $deg_y = array();
-    $deg_z = array();
-    $agv_x = array();
-    $agv_y = array();
-    $agv_z = array();
-    $acc_x = array();
-    $acc_y = array();
-    $acc_z = array();
-    
-    while($row = mysqli_fetch_array($result)) {
-      array_push($result_date, $row['record_date']);
-      array_push($deg_x, $row['deg_x']);
-      array_push($deg_y, $row['deg_y']);
-      array_push($deg_z, $row['deg_z']);
-      $deg_x_avg += $rows['deg_x']/$num;
-      
-      array_push($agv_x, $row['agv_x']);
-      array_push($agv_y, $row['agv_y']);
-      array_push($agv_z, $row['agv_z']);
-      array_push($acc_x, $row['acc_x']);
-      array_push($acc_y, $row['acc_y']);
-      array_push($acc_z, $row['acc_z']);
-    }
-  }
-
-  $z_std_dev = array();
-  for($i = 0 ; $i < $range ; $i++){
-    array_push($z_std_dev, 0);
-  }
-
-  for ( $i = 0 ; $i < $num ; $i++ ){
-    $avg_z = 0;
-    for( $j = $i ; $j < $i + $range ; $j++) {
-      $avg_z += $acc_z[$j] / $range ;
-    }
-    $temp = 0;
-    for( $j = $i ; $j < $i + $range ; $j++) {
-      $temp += round(pow( ($avg_z - $acc_z[$j]), 2) / $range, 3);
-    }
-    $temp = sqrt($temp);
-    array_push($z_std_dev, $temp);
+    $result_bump =  mysqli_query($conn, $sql);
+    $result_date_deg =  mysqli_query($conn, $sql);
+    $result_data_deg_x = mysqli_query($conn, $sql);
+    $result_data_deg_y = mysqli_query($conn, $sql);
+    $result_data_deg_z = mysqli_query($conn, $sql);
+    $result_date_acc =  mysqli_query($conn, $sql);
+    $result_data_acc_x = mysqli_query($conn, $sql);
+    $result_data_acc_y = mysqli_query($conn, $sql);
+    $result_data_acc_z = mysqli_query($conn, $sql);
+    $result_date_agv =  mysqli_query($conn, $sql);
+    $result_data_agv_x = mysqli_query($conn, $sql);
+    $result_data_agv_y = mysqli_query($conn, $sql);
+    $result_data_agv_z = mysqli_query($conn, $sql);
   }
 ?>
 
@@ -97,7 +59,6 @@
 
   <head>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
-    <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/button.css">
     <style type="text/css">
       .container {
@@ -110,15 +71,26 @@
   <body>
     <header>
       <?php include('gyro_button.html'); ?>
-      <br><br>
-      <?php include('gyro_search.html')?>
-    </header>  
+    </header>
+    
+    <br>
+    <form method='post' align="center">
+      <input type='text' name='kickboard' placeholder='' value='<?php echo $kickboard; ?>' style="color:grey">
+      <br>
+      <input type='text' name='date' placeholder='YYYY-mm-dd' value='<?php echo $date; ?>' style="color:grey">
+      <br>
+      <input type='text' name='start_time' value='<?php echo $start_time; ?>' style="width:120px;color:grey">
+      ~
+      <input type='text' name='end_time' value='<?php echo $end_time; ?>' style="width:120px;color:grey">
+      <br>
+      <input type='submit' value='SEARCH'>
+    </form>
 
-    <!-- <p><?php
+    <p><?php
       echo "Searched : ".$kickboard.
           " from ".date($mysql_start_date).
           " ~ ".date($mysql_end_date);
-    ?></p> -->
+    ?></p>
 
     <div class="container">
       <details>
@@ -135,12 +107,88 @@
     </div>
       
     <div align="center">
-      <hr size="4px" color="darkcyan" width="80%">
       <br>
-      <form method="POST" action="download.php">
-        <input class="button demo" type='submit' value='Download'>
-      </form>
+      <h2>Bump Value</h2>
+      <?php
+        $acc_x = array();
+        $acc_y = array();
+        $acc_z = array();
+        $num = mysqli_num_rows($result_bump);
+
+        while ( $rows = mysqli_fetch_array($result_bump)){
+          array_push($acc_x, $rows['acc_x']);
+          array_push($acc_y, $rows['acc_y']);
+          array_push($acc_z, $rows['acc_z']);
+        }
+        
+        $filename = "data/layer_value.txt";
+        if(file_exists($filename)){
+          $fp = fopen($filename, "r");
+          $layer = array();
+          while( !feof($fp) ) {
+              $temp = fgets($fp);
+              array_push($layer, $temp);
+          }
+          fclose($fp);
+        } else {
+            $layer = array(0, 1, 2, 3, 4, 5, 5, 4, 3, 1, 0);
+        }
+        
+        $first = 0;
+        $second = 0;
+        $thrid = 0;
+        $max = array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        $min = array(100, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        $bump_std = 42;
+        $num_1 = 0;
+        $num_2 = 0;
+
+        for ( $i = 0 ; $i < $num - 12 ; $i++ ){
+          $bump = 0;
+          for( $j = $i ; $j < $i + 12 ; $j++) {
+            $bump += ( $acc_z[$j] ) * $layer[$j - $i] ;
+          }
+          if($bump >= $bump_std) $num_1++;
+          else $num_2++;
+          // echo $bump."<br>";
+          for( $j = 0 ; $j < 10; $j++ ){
+            if( $bump > $max[$j]) {            
+              for( $k = 9 ; $k > $j ; $k-- ){
+                $max[$k] = $max[$k - 1];
+              }
+              $max[$j] = $bump;
+              break;
+            }
+          }
+          for( $j = 0 ; $j < 10; $j++ ){
+            if( $bump < $min[$j]) {            
+              for( $k = 9 ; $k > $j ; $k-- ){
+                $min[$k] = $min[$k - 1];
+              }
+              $min[$j] = $bump;
+              break;
+            }
+          }
+        }
+
+        echo $num_1." Values bigger than ".$bump_std."<br>";
+        echo $num_2." Values smaller than ".$bump_std."<br>";
+        echo "in ".$num." Records <br><br>";
+
+        for( $i = 0 ; $i < 10 ; $i++ ){
+          echo ($i+1)."th Max Value : ".$max[$i];
+          echo "<br>";
+        }
+        echo "...<br>";
+        for( $i = 9 ; $i >= 0 ; $i-- ){
+          echo ($i+1)."th Min Value : ".$min[$i];
+          echo "<br>";
+        }
+
+
+      ?>
       <br>
+      ------------------------------------
     </div>
 
     <!-- Degree GRAPH -->
@@ -150,16 +198,16 @@
         type: 'line',
         data: {
           labels: [<?php 
-            for($i = 0 ; $i < count($result_date) ; $i++){
-              echo '"'.$result_date[$i].'",';
+            while($rows = mysqli_fetch_array($result_date_deg) ){
+              echo '"'.$rows['record_date'].'",';
             }
             ?>],
           datasets: [
             {
               label: 'Degree X',
               data: [<?php
-                for($i = 0 ; $i < count($deg_x) ; $i++){
-                  echo '"'.$deg_x[$i].'",';
+                while($rows_ = mysqli_fetch_array($result_data_deg_x) ){
+                  echo '"'.$rows_['deg_x'].'",';
                 }
               ?>],
               backgroundColor: [
@@ -173,14 +221,14 @@
             }, {
               label: 'Degree Y',
               data: [<?php
-                for($i = 0 ; $i < count($deg_y) ; $i++){
-                  echo '"'.$deg_y[$i].'",';
+                while($rows_ = mysqli_fetch_array($result_data_deg_y) ){
+                  echo '"'.$rows_['deg_y'].'",';
                 }
               ?>],
               backgroundColor: [
                 'rgba(255, 255, 255, 0.2)',
               ],
-              borderColor: [  
+              borderColor: [
                 'rgba(0, 255, 0, 0.6)',
               ],
               borderWidth: 1,
@@ -188,8 +236,8 @@
             }, {
               label: 'Degree Z',
               data: [<?php
-                for($i = 0 ; $i < count($deg_z) ; $i++){
-                  echo '"'.$deg_z[$i].'",';
+                while($rows_ = mysqli_fetch_array($result_data_deg_z) ){
+                  echo '"'.$rows_['deg_z'].'",';
                 }
               ?>],
               backgroundColor: [
@@ -204,8 +252,11 @@
           ]
         },
         options: {
-          hover: {mode: null},
           responsive: true,
+          title: {
+            display: true,
+            text: 'Degree Graph'
+          },
           scales: {
             xAxes: [{
               display: true,
@@ -230,7 +281,7 @@
         }
       });
     </script>
-    
+
     <!-- Angular Velocity GRAPH -->
     <script>
       var ctx = document.getElementById("agv_Chart");
@@ -238,16 +289,16 @@
         type: 'line',
         data: {
           labels: [<?php 
-            for($i = 0 ; $i < count($result_date) ; $i++){
-              echo '"'.$result_date[$i].'",';
+            while($rows = mysqli_fetch_array($result_date_agv) ){
+              echo '"'.$rows['record_date'].'",';
             }
             ?>],
           datasets: [
             {
               label: 'Angular Velocity X',
               data: [<?php
-                for($i = 0 ; $i < count($agv_x) ; $i++){
-                  echo '"'.$agv_x[$i].'",';
+                while($rows_ = mysqli_fetch_array($result_data_agv_x) ){
+                  echo '"'.$rows_['agv_x'].'",';
                 }
               ?>],
               backgroundColor: [
@@ -261,8 +312,8 @@
             }, {
               label: 'Angular Velocity Y',
               data: [<?php
-                for($i = 0 ; $i < count($agv_y) ; $i++){
-                  echo '"'.$agv_y[$i].'",';
+                while($rows_ = mysqli_fetch_array($result_data_agv_y) ){
+                  echo '"'.$rows_['agv_y'].'",';
                 }
               ?>],
               backgroundColor: [
@@ -276,8 +327,8 @@
             }, {
               label: 'Angular Velocity Z',
               data: [<?php
-                for($i = 0 ; $i < count($agv_z) ; $i++){
-                  echo '"'.$agv_z[$i].'",';
+                while($rows_ = mysqli_fetch_array($result_data_agv_z) ){
+                  echo '"'.$rows_['agv_z'].'",';
                 }
               ?>],
               backgroundColor: [
@@ -292,8 +343,11 @@
           ]
         },
         options: {
-          hover: {mode: null},
           responsive: true,
+          title: {
+            display: true,
+            text: 'Angular Velocity Graph'
+          },
           scales: {
             xAxes: [{
               display: true,
@@ -326,16 +380,16 @@
         type: 'line',
         data: {
           labels: [<?php 
-            for($i = 0 ; $i < count($result_date) ; $i++){
-              echo '"'.$result_date[$i].'",';
+            while($rows = mysqli_fetch_array($result_date_acc) ){
+              echo '"'.$rows['record_date'].'",';
             }
             ?>],
           datasets: [
             {
               label: 'Acceleration X',
               data: [<?php
-                for($i = 0 ; $i < count($acc_x) ; $i++){
-                  echo '"'.$acc_x[$i].'",';
+                while($rows_ = mysqli_fetch_array($result_data_acc_x) ){
+                  echo '"'.$rows_['acc_x'].'",';
                 }
               ?>],
               backgroundColor: [
@@ -349,8 +403,8 @@
             }, {
               label: 'Acceleration Y',
               data: [<?php
-                for($i = 0 ; $i < count($acc_y) ; $i++){
-                  echo '"'.$acc_y[$i].'",';
+                while($rows_ = mysqli_fetch_array($result_data_acc_y) ){
+                  echo '"'.$rows_['acc_y'].'",';
                 }
               ?>],
               backgroundColor: [
@@ -364,8 +418,8 @@
             }, {
               label: 'Acceleration Z',
               data: [<?php
-                for($i = 0 ; $i < count($acc_z) ; $i++){
-                  echo '"'.$acc_z[$i].'",';
+                while($rows_ = mysqli_fetch_array($result_data_acc_z) ){
+                  echo '"'.$rows_['acc_z'].'",';
                 }
               ?>],
               backgroundColor: [
@@ -376,27 +430,15 @@
               ],
               borderWidth: 1,
               pointRadius: 0
-            }, {
-              label: 'Z standard Deviation',
-              data: [<?php
-                for($i = 0 ; $i < $num ; $i++){
-                  echo '"'.$z_std_dev[$i].'",';
-                }
-              ?>],
-              backgroundColor: [
-                'rgba(255, 255, 255, 0.2)',
-              ],
-              borderColor: [
-                'rgba(255, 0, 255, 0.6)',
-              ],
-              borderWidth: 1,
-              pointRadius: 0
             }
           ]
         },
         options: {
-          hover: {mode: null},
           responsive: true,
+          title: {
+            display: true,
+            text: 'Acceleration Graph'
+          },
           scales: {
             xAxes: [{
               display: true,

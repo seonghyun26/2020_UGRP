@@ -1,14 +1,54 @@
-<br>
-<button type="button" class="button color" onclick="location.href='/index.html'">
-    HOME
+<button type="button" class="button" onclick="location.href='/index.html'">
+    <img class="home" src="./images/home_filled.png" alt="Image Error">
 </button>
 <br>
-<button type="button" class="button dark" name="record" onclick="location.href='/gyro.html'">
-    Record
-</button>
-<button type="button" class="button dark" name="gyro_graph" onclick="location.href='/gyro_graph.php'">
+
+<button type="button" class="button
+    <?php 
+        if($_SERVER['REQUEST_URI'] == '/gyro_graph.php')    echo "dark";
+        else echo "color";
+    ?>
+    "
+    name="gyro_graph" onclick="location.href='/gyro_graph.php'">
     Graph
 </button>
-<button type="button" class="button dark" name="gyro_insert" onclick="location.href='/gyro_insert.php'">
+
+<button type="button" class="button 
+    <?php 
+        if($_SERVER['REQUEST_URI'] == '/gyro_map.html')    echo "dark";
+        else echo "color";
+    ?>
+    "
+    name="gyro_insert" onclick="location.href='/gyro_map.html'">
+    Map
+</button>
+
+<button type="button" class="button
+    <?php 
+        if($_SERVER['REQUEST_URI'] == '/gyro_graphnmap.php')    echo "dark";
+        else echo "color";
+    ?>
+    "
+    name="gyro_insert" onclick="location.href='/gyro_graphnmap.php'">
+    Graph&Map
+</button>
+
+<button type="button" class="button
+    <?php 
+        if($_SERVER['REQUEST_URI'] == '/gyro.html')    echo "dark";
+        else echo "color";
+    ?>
+    "   
+    name="record" onclick="location.href='/gyro.html'">
+    Record
+</button>
+
+<button type="button" class="button 
+    <?php 
+        if($_SERVER['REQUEST_URI'] == '/gyro_insert.php')    echo "dark";
+        else echo "color";
+    ?>
+    "   
+name="gyro_insert" onclick="location.href='/gyro_insert.php'">
     Insert
 </button>

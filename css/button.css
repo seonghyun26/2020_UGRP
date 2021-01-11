@@ -1,6 +1,6 @@
 .button {
     border: none;
-    border-radius: 5px;
+    border-radius: 10px;
     color :white;
     padding: 15px 32px;
     text-align: center;
@@ -15,7 +15,14 @@
 }
 
 .dark {
-    background-color: darkseagreen;
+    background-color: #2BAE66;
+}
+
+.demo {
+    background-color: #2E856E;
+    width: 40%;
+    height: 100px;
+    font-size: 60px;
 }
 
 .lock {
@@ -34,4 +41,34 @@ input[type=checkbox].switch{
     cursor: pointer;
     width: 30px;
     height: 30px;
+}
+
+.number {
+    width: 40%;
+    height: 40px;
+}
+
+.label {
+    font-size: 24px;
+    background-color: white;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.label_selected {
+    font-size: 24px;
+    background-color:#2BAE66;
+    font-weight: bold;
+    color: white;
+    padding: 7px 14px;
+    border-radius: 10px;
+}
+
+b {
+    font-size: 32px;
+}
+
+.home {
+    height: 50px;
+    width: 50px;
 }

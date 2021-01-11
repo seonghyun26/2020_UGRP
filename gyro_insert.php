@@ -10,15 +10,16 @@
     if( (($_SERVER['REQUEST_METHOD'] == 'POST') && isset($_POST['submit'])) || $android )
     {
         $kickboard=$_POST['kickboard'];
-        $loc_x=$_POST['loc_x'];
-        $loc_y=$_POST['loc_y'];
-        $loc_z=$_POST['loc_z'];
+        $deg_x=$_POST['deg_x'];
+        $deg_y=$_POST['deg_y'];
+        $deg_z=$_POST['deg_z'];
+        $agv_x=$_POST['agv_x'];
+        $agv_y=$_POST['agv_y'];
+        $agv_z=$_POST['agv_z'];
         $acc_x=$_POST['acc_x'];
         $acc_y=$_POST['acc_y'];
         $acc_z=$_POST['acc_z'];
-        $ang_x=$_POST['ang_x'];
-        $ang_y=$_POST['ang_y'];
-        $ang_z=$_POST['ang_z'];
+
         $latitude=$_POST['latitude'];
         $longitude=$_POST['longitude'];
 
@@ -29,17 +30,18 @@
         if(!isset($errMSG))
         {
             try{
-                $stmt = $con->prepare('INSERT INTO mark2 (kickboard, loc_x, loc_y, loc_z, acc_x, acc_y, acc_z, ang_x, ang_y, ang_z, latitude, longitude ) VALUES(:kickboard, :loc_x, :loc_y, :loc_z, :acc_x, :acc_y, :acc_z, :ang_x, :ang_y, :ang_z, :latitude, :longitude)');
+                $stmt = $con->prepare('INSERT INTO mark2 (kickboard, deg_x, deg_y, deg_z, agv_x, agv_y, agv_z, acc_x, acc_y, acc_z, latitude, longitude )
+                VALUES(:kickboard, :deg_x, :deg_y, :deg_z, :agv_x, :agv_y, :agv_z, :acc_x, :acc_y, :acc_z, :latitude, :longitude)');
                 $stmt->bindParam(':kickboard', $kickboard);
-                $stmt->bindParam(':loc_x', $loc_x);
-                $stmt->bindParam(':loc_y', $loc_y);
-                $stmt->bindParam(':loc_z', $loc_z);
+                $stmt->bindParam(':deg_x', $deg_x);
+                $stmt->bindParam(':deg_y', $deg_y);
+                $stmt->bindParam(':deg_z', $deg_z);
+                $stmt->bindParam(':agv_x', $agv_x);
+                $stmt->bindParam(':agv_y', $agv_y);
+                $stmt->bindParam(':agv_z', $agv_z);
                 $stmt->bindParam(':acc_x', $acc_x);
                 $stmt->bindParam(':acc_y', $acc_y);
                 $stmt->bindParam(':acc_z', $acc_z);
-                $stmt->bindParam(':ang_x', $ang_x);
-                $stmt->bindParam(':ang_y', $ang_y);
-                $stmt->bindParam(':ang_z', $ang_z);
                 $stmt->bindParam(':latitude', $latitude);
                 $stmt->bindParam(':longitude', $longitude);
 
@@ -85,23 +87,23 @@
                 </br>
                 Kickboard: <input type = "text" name = "kickboard" />
                 </br>
-                loc_x: <input type = "text" name = "loc_x" />
+                deg_x: <input type = "text" name = "deg_x" />
                 </br>
-                loc_y: <input type = "text" name = "loc_y" />
+                deg_y: <input type = "text" name = "deg_y" />
                 </br>
-                loc_z: <input type = "text" name = "loc_z" />
+                deg_z: <input type = "text" name = "deg_z" />
+                </br>
+                agv_x: <input type = "text" name = "agv_x" />
+                </br>
+                agv_y: <input type = "text" name = "agv_y" />
+                </br>
+                agv_z: <input type = "text" name = "agv_z" />
                 </br>
                 acc_x: <input type = "text" name = "acc_x" />
                 </br>
                 acc_y: <input type = "text" name = "acc_y" />
                 </br>
                 acc_z: <input type = "text" name = "acc_z" />
-                </br>
-                ang_x: <input type = "text" name = "ang_x" />
-                </br>
-                ang_y: <input type = "text" name = "ang_y" />
-                </br>
-                ang_z: <input type = "text" name = "ang_z" />
                 </br>
                 Latitude: <input type = "text" name = "latitude" />
                 </br>

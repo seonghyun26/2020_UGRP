@@ -1,0 +1,19 @@
+<form method='post' align="left">
+  <table align="center">
+    <tr>
+      <td>
+        <input type='text' name='kickboard' value='<?php echo $kickboard; ?>' style="width:160px; height:24px;">
+        <input type='text' name='range' placeholder='표준편차 계산범위' value='<?php echo $range; ?>' style="width:160px; height:24px;">
+        <br>
+        <input type='date' name='date' value='<?php echo $date; ?>' style="width:350px; height:24px;">
+        <br>
+        <input type='time' step="1" name='start_time' value='<?php echo $start_time; ?>' style="width:160px; height:24px;">
+        ~
+        <input type='time' step="1" name='end_time' value='<?php echo $end_time; ?>' style="width:160px; height:24px;">
+      </td>
+      <td>
+        <input class="button dark"type='submit' value='SEARCH' style="width:200px; height:100px;">
+      </td>
+    </tr>
+  </table>
+</form>

@@ -1,0 +1,143 @@
+<?php
+  header('Content-Type: text/html; charset=utf-8');
+  include('../conn.php');  
+  
+  $kickboard = $_POST['kickboard'];
+  if(empty($kickboard)){
+    $kickboard = $_COOKIE['kickboard'];
+    if(empty($kickboard))  $kickboard = '120';
+  }
+  setcookie("kickboard", $kickboard, time() + 86400);
+
+  $date = $_POST['date'];
+  if(empty($date)) {
+    $date = $_COOKIE['date'];
+    if(empty($date))  $date = date("Y-m-d");
+  }
+  setcookie("date", $date, time() + 86400);
+  
+  $start_time = $_POST['start_time'];
+  if(empty($start_time)) {
+    $start_time = $_COOKIE['start_time'];
+    if(empty($start_time))  $start_time = date("H:00:00", strtotime("-1 hour"));
+  }
+  $mysql_start_date = DateTime::createFromFormat('Y-m-d H:i:s', $date. $start_time)->format('Y-m-d H:i:s');
+  setcookie("start_time", $start_time, time() + 86400);
+
+  $end_time = $_POST['end_time'];
+  if(empty($end_time)) {
+    $end_time = $_COOKIE['end_time'];
+    if(empty($end_time))  $end_time = date("H:00:00", strtotime("+1 hour"));
+  }
+  $mysql_end_date = DateTime::createFromFormat("Y-m-d H:i:s", $date. $end_time)->format('Y-m-d H:i:s');
+  setcookie("end_time", $end_time, time() + 86400);
+
+  if (mysqli_connect_errno()) {
+    echo "Failed to connect to MySQL: " . mysqli_connect_error();
+  } else {
+    $sql = "SELECT * FROM mark3 WHERE kickboard = '$kickboard' AND (record_date BETWEEN '$mysql_start_date' AND '$mysql_end_date')";
+    $result =  mysqli_query($conn, $sql);
+  }
+?>
+
+<!DOCTYPE html>
+
+  <head>
+    <meta charset="utf-8">
+    <title>Gryo Convolution</title>
+    <link rel="stylesheet" href="../css/button.css">
+  </head>
+
+  <body>
+    <header>
+        <?php include('convol_button.html'); ?>
+    </header>
+
+    <div style="text-align:center">
+        <br>
+        <form method='post'>
+            <input type='text' name='kickboard' placeholder='' value='<?php echo $kickboard; ?>' style="color:grey">
+            <br>
+            <input type='text' name='date' placeholder='YYYY-mm-dd' value='<?php echo $date; ?>' style="color:grey">
+            <br>
+            <input type='text' name='start_time' value='<?php echo $start_time; ?>' style="width:120px;color:grey">
+            ~
+            <input type='text' name='end_time' value='<?php echo $end_time; ?>' style="width:120px;color:grey">
+            <br>
+            <input type='submit' value='SEARCH'>
+          </form>
+
+        <table align="center" border="1" bordercolor="white" bgcolor="black" width="90%">
+            <tr>
+                <th width="120px" height="40px" bgcolor="white" rowspan="2" align="center">
+                    <font size="3">Record</font>
+                    <font size="5">No.</font>
+                </th>
+                <th width="300px" height="40px" bgcolor="white" rowspan="2" align="center">
+                    <font size="6">DATE</font>
+                </th>
+                <th  height="20px" bgcolor="white" colspan="3" align="center">
+                    <font size="5">Degree</font>
+                </th>
+                <th height="20px" bgcolor="white" colspan="3" align="center">
+                    <font size="5">Angular Velocity</font>
+                </th>
+                <th height="20px" bgcolor="white" colspan="3" align="center">
+                    <font size="5">Linear Acceleration</font>
+                </th>
+            </tr>
+            <tr>
+                <td width="40" height="20px" bgcolor="white" align="center">
+                    <font size="5">x</font>
+                </td>
+                <td width="40" height="20px" bgcolor="white" align="center">
+                    <font size="5">y</font>
+                </td>
+                <td width="40" height="20px" bgcolor="white" align="center">
+                    <font size="5">z</font>
+                </td>
+                <td width="40" height="20px" bgcolor="white" align="center">
+                    <font size="5">x</font>
+                </td>
+                <td width="40" height="20px" bgcolor="white" align="center">
+                    <font size="5">y</font>
+                </td>
+                <td width="40" height="20px" bgcolor="white" align="center">
+                    <font size="5">z</font>
+                </td>
+                <td width="40" height="20px" bgcolor="white" align="center">
+                    <font size="5">x</font>
+                </td>
+                <td width="40" height="20px" bgcolor="white" align="center">
+                    <font size="5">y</font>
+                </td>
+                <td width="40" height="20px" bgcolor="white" align="center">
+                    <font size="5">z</font>
+                </td>
+            </tr>
+            <p>
+                <?php
+                $num = 0;
+                    while(($rows = mysqli_fetch_array($result)) && ($num < 1000) ){
+                        $num++;
+                        echo '<tr align="center" height="36px" bgcolor="white">';
+                        echo '<td>',$rows['no'],'</td>';    
+                        echo '<td>',$rows['record_date'],'</td>';    
+                        echo '<td>',$rows['deg_x'],'</td>';
+                        echo '<td>',$rows['deg_y'],'</td>';
+                        echo '<td>',$rows['deg_z'],'</td>';
+                        echo '<td>',$rows['agv_x'],'</td>';
+                        echo '<td>',$rows['agv_y'],'</td>';
+                        echo '<td>',$rows['agv_z'],'</td>';
+                        echo '<td>',$rows['acc_x'],'</td>';
+                        echo '<td>',$rows['acc_y'],'</td>';
+                        echo '<td>',$rows['acc_z'],'</td>';
+                        echo '</tr>';
+                    }
+                ?>
+            </p>
+        </table>
+    </div>
+  </body>
+
+</html>

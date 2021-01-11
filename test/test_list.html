@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html style="font-size: 16px;">
+
+<head>
+  <title>SCOOKER TEST PAGE</title>
+  <script>
+  </script>
+</head>
+
+<body>
+  <header>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/button.css">
+    <link rel="shortcut icon" href="http://scooker.cf/images/scooker_small.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="http://scooker.cf/images/scooker_small.ico">
+    <link rel="icon" href="http://scooker.cf/images/scooker_small.ico" type="image/x-icon">
+    <link rel="icon" href="http://scooker.cf/images/scooker_small.ico">
+  </header>
+
+  <div align="center">
+    <img src="../images/scooker_v3.png" alt="No Image Found" width="30%" onclick="location.href='../index.html'">
+    <h1> Test Site List</h1>
+    <hr size="4px" color="darkcyan" width="90%">
+    <br>
+    <?php
+        $dir = "./";
+        $handle  = opendir($dir);
+        $files = array();
+        $count = 0;
+        
+        // 디렉터리에 포함된 파일을 저장
+        while (false !== ($filename = readdir($handle))) {
+            if($filename == "." || $filename == ".."){
+                continue;
+            }
+            if(is_file($dir . "/" . $filename)){
+                $files[] = $filename; 
+                $count++;
+            }
+        }
+        
+        closedir($handle);
+        sort($files);
+        for($i = 0 ; $i < $count ; $i = $i + 1){
+          if($files[$i] != "test_list.html"){
+            echo "<a href='"."./"."$files[$i]"."'>".$files[$i]."</a>";
+          echo "<br><br>";
+          }
+        }
+    ?>
+  </div>
+</body>
+
+</html>

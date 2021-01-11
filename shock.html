@@ -2,30 +2,27 @@
   header('Content-Type: text/html; charset=utf-8');
   include('conn.php');
   
-  $kickboard_name=$_POST['kickboard_name'];
-  if(empty($kickboard_name)){
-    $kickboard_name = 'HC-06';
+  $kickboard = $_POST['kickboard'];
+  if(empty($kickboard))   $kickboard = 'SCK06';
+  
+  $date = $_POST['date'];
+  if(empty($date)) {
+    $date = $_COOKIE['date'];
+    if(empty($date))  $date = date("Y-m-d");
   }
-  
-  $start_date=$_POST['start_date'];
-  if(empty($start_date)) $start_date = date("Y-m-d");;
-  $start_time=$_POST['start_time'];
+  setcookie("date", $date, time() + 86400);
+
+  $start_time = $_POST['start_time'];
   if(empty($start_time)) $start_time = '00:00:00';
-  $mysql_start_date = DateTime::createFromFormat('Y-m-dH:i:s', $start_date. $start_time)->format('Y-m-d H:i:s');
-  
-  $end_date=$_POST['end_date'];
-  if(empty($end_date)) $end_date = date("Y-m-d");
-  $end_time=$_POST['end_time'];
+  $mysql_start_date = DateTime::createFromFormat('Y-m-d H:i:s', $date. $start_time)->format('Y-m-d H:i:s');
+  $end_time = $_POST['end_time'];
   if(empty($end_time)) $end_time = '23:59:59';
-  $mysql_end_date = DateTime::createFromFormat("Y-m-dH:i:s", $end_date. $end_time)->format('Y-m-d H:i:s');
+  $mysql_end_date = DateTime::createFromFormat("Y-m-d H:i:s", $date. $end_time)->format('Y-m-d H:i:s');
 
   if (mysqli_connect_errno()) {
     echo "Failed to connect to MySQL: " . mysqli_connect_error();
   } else {
     echo "CONNECTION SUCCESS\n";
-    echo " 김민준 므싰다 ";
-    $sql = "SELECT * FROM mark1 WHERE kickboard = '$kickboard_name' AND (shock_date BETWEEN '$mysql_start_date' AND '$mysql_end_date')";
-    $result =  mysqli_query($conn, $sql);
   }
 ?>
 
@@ -43,25 +40,39 @@
       <?php include('shock_button.html'); ?>
     </header>
 
-    <div style="text-align:center">
+    <div align="center">
       <br>
       <form method='post'>
-        <input type='text' name='kickboard_name' placeholder='블루투스 이름(default HC-06)' value='' style="width:240px;color:grey">
+        <input type='text' name='kickboard' placeholder='' value='<?php echo $kickboard; ?>' style="color:grey">
         <br>
-        <input type='text' name='start_date' placeholder='시작날짜(YYYY-mm-dd)' value='' style="color:grey">
-        <input type='text' name='start_time' placeholder='시간(HH-MM-SS) (default 00:00:00)' value='' style="width:240px;color:grey">
+        <input type='text' name='date' placeholder='YYYY-mm-dd' value='<?php echo $date; ?>' style="color:grey">
         <br>
-        <input type='text' name='end_date'   placeholder='종료날짜(YYYY-mm-dd)' value='' style="color:grey">
-        <input type='text' name='end_time' placeholder='시간(HH-MM-SS) (default 23:59:59)' value='' style="width:240px;color:grey">
+        <input type='text' name='start_time' placeholder='00:00:00' value='<?php echo $start_time; ?>' style="width:120px;color:grey">
+        ~
+        <input type='text' name='end_time' placeholder='23:59:59' value='<?php echo $end_time; ?>' style="width:120px;color:grey">
         <br>
         <input type='submit' value='SEARCH'>
       </form>
+      <!-- <form method='post'>
+        <input type='text' name='yesterday' value="<?php
+          $yesterday = date('Y-m-d H:i:s', strtotime($date . ' -1 day'));
+          echo $yesterday;?>" style="text-align: center;">
+          <input type='submit' value='Yesterday'>
+      </form> -->
       <p><?php
-        echo "Searched : ".$kickboard_name.
-            " from ".date($mysql_start_date).
-            " to ".date($mysql_end_date);
+        echo $kickboard.
+          " from ".date($mysql_start_date).
+          " to ".date($mysql_end_date);
+        $sql = "SELECT * FROM mark1 WHERE kickboard = '$kickboard' AND (shock_date BETWEEN '$mysql_start_date' AND '$mysql_end_date')";
+        $result =  mysqli_query($conn, $sql);
         ?>
       </p>
+      <!-- <form method='post'>
+        <input type='text' name='tomorrow' value="<?php
+        $tomorrow = date('Y-m-d H:i:s', strtotime($date . ' +1 day'));
+        echo $tomorrow;?>" readonly style="text-align: center;">
+        <input type='submit' value='Tomorrow'>
+      </form> -->
 
       <table align="center" border="1" bordercolor="white" bgcolor="black">
         <th width="160px" height="40px" bgcolor="white">

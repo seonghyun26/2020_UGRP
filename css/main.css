@@ -11,3 +11,13 @@
     font-family: Comic Sans MS;
     font-weight: bold;
 }
+
+input{
+    text-align: center;
+    border-radius: 5px;
+    border: none;
+    margin: 2px 2px;
+    background: #DDDDDD;
+    font-size: 16px;
+    padding:2px 2px;
+}

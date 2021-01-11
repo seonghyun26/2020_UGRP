@@ -1,0 +1,147 @@
+<?php
+  header('Content-Type: text/html; charset=utf-8');
+  include('conn.php');  
+   
+  $kickboard = $_POST['kickboard'];
+  if(empty($kickboard)){
+    $kickboard = $_COOKIE['kickboard'];
+    if(empty($kickboard))  $kickboard = '120';
+  }
+  setcookie("kickboard", $kickboard, time() + 86400);
+  
+  $date = $_POST['date'];
+  if(empty($date)) {
+    $date = $_COOKIE['date'];
+    if(empty($date))  $date = date("Y-m-d");
+  }
+  setcookie("date", $date, time() + 86400);
+  
+  $start_time = $_POST['start_time'];
+  if(empty($start_time)) {
+    $start_time = $_COOKIE['start_time'];
+    if(empty($start_time))  $start_time = date("H:00:00", strtotime("-1 hour"));
+  }
+  $mysql_start_date = DateTime::createFromFormat('Y-m-d H:i:s', $date. $start_time)->format('Y-m-d H:i:s');
+  setcookie("start_time", $start_time, time() + 86400);
+
+  $end_time = $_POST['end_time'];
+  if(empty($end_time)) {
+    $end_time = $_COOKIE['end_time'];
+    if(empty($end_time))  $end_time = date("H:00:00", strtotime("-50 minute"));
+  }
+  $mysql_end_date = DateTime::createFromFormat("Y-m-d H:i:s", $date. $end_time)->format('Y-m-d H:i:s');
+  setcookie("end_time", $end_time, time() + 86400);
+
+  $range = $_POST['range'];
+  if(empty($range)){
+    $range = $_COOKIE['range'];
+    if(empty($range)) $range = 24;
+  }
+  setcookie("range", $range, time() + 86400);
+
+  if (mysqli_connect_errno()) {
+    echo "Failed to connect to MySQL: " . mysqli_connect_error();
+  } else {
+    $sql = "SELECT * FROM mark2 WHERE kickboard = '$kickboard' AND (record_date BETWEEN '$mysql_start_date' AND '$mysql_end_date')";
+    $result = mysqli_query($conn, $sql);
+    $length = mysqli_num_rows($result);
+    
+    $lat = [];
+    $long = [];
+
+    while( $rows = mysqli_fetch_array($result) ){
+      array_push($lat, $rows['latitude']);
+      array_push($long, $rows['longitude']);
+    }
+
+    $gps=[];
+
+    for ( $i = 0 ; $i < $length ; $i++ ){
+      array_push($gps, array('lat' => $lat[$i], 'long' => $long[$i]) );
+    }
+
+    $gps_json = json_encode($gps);
+  }
+?>
+
+<!DOCTYPE html>
+<html style="font-size: 16px;">
+
+  <head>
+	<meta charset="utf-8"/>
+    <title>SCOOKER</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/button.css">
+    <script>
+      var length = <?php echo $length;?>;
+      var gps = <?php echo $gps_json; ?>;
+    </script>
+  </head>
+
+  <body>
+    <header>
+      <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=943099a8532d50175446b338d9f13a37"></script>
+      <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=APIKEY&libraries=services,clusterer,drawing"></script>
+      <?php include('gyro_button.html'); ?>
+      <br><br>
+      <?php include('gyro_search.html')?>
+    </header>
+
+    <div align="center">
+      <img src="../images/unlock.png" alt="No Image Found" width="30px" id="lock_image">
+      <input type="checkbox" onclick="lock()" class="switch" id="check">
+
+      <div id="map" style="width:900px; height:400px;"></div>
+      <br>
+      <hr size="4px" color="darkcyan" width="90%">  
+
+      <script>
+        var container = document.getElementById('map');
+        var options = {
+          center: new kakao.maps.LatLng(36.012277245185594, 129.32373470210902),
+          level: 5
+        };
+
+        var map = new kakao.maps.Map(container, options);
+
+        var mapTypeControl = new kakao.maps.MapTypeControl();
+        map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
+        var zoomControl = new kakao.maps.ZoomControl();
+        map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+
+        function lock(){
+          var chk = document.getElementById('check').checked;
+          if(chk) document.getElementById('lock_image').src="../images/lock.png";
+          else document.getElementById('lock_image').src="../images/unlock.png";
+          map.setDraggable(!chk);
+          map.setZoomable(!chk);
+        }
+
+        var positions=[];
+        for (var i = 0; i < length ; i++) {
+          positions.push( new kakao.maps.LatLng(gps[i].lat, gps[i].long) );
+        }
+
+        var polyline = new kakao.maps.Polyline({
+          path: positions, // 선을 구성하는 좌표배열 입니다
+          strokeWeight: 3, // 선의 두께 입니다
+          strokeColor: '#1EE4A9', // 선의 색깔입니다
+          strokeOpacity: 0.8, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
+          strokeStyle: 'solid' // 선의 스타일입니다
+        });
+        polyline.setMap(map);  
+        
+        for (var i = 0; i < positions.length; i+=100) {
+          var marker = new kakao.maps.Marker({
+            map: map, // 마커를 표시할 지도
+            position: positions[i], // 마커를 표시할 위치
+            title : i // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
+          });
+        }
+        marker.setMap(map);
+
+      </script>
+    </div>
+  </body>
+
+</html>
