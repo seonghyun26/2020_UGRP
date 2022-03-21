@@ -2,9 +2,10 @@
 - Team SCOOKER 
 Server Code for personal mobility tracking device
 
-대충 ugrp 잡아먹은 프로젝트
+<!-- 대충 ugrp 잡아먹은 프로젝트 -->
 
 Link: http://scooker.cf/
+(현재 서버는 운영하고 있지 않습니다)
 
 Example
 
